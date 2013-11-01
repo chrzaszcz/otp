@@ -1022,6 +1022,10 @@ erts_send_message(Process* sender,
 
 	    res = receiver->msg.len;
 
+            DTRACE6(message_queued,
+                    receiver_name, size_object(message), receiver->msg.len,
+                    tok_label, tok_lastcnt, tok_serial);
+
 	    if (IS_TRACED_FL(receiver, F_TRACE_RECEIVE)) {
 		trace_receive(receiver, message);
 	    }
