@@ -352,21 +352,6 @@ erts_queue_dist_message(Process *rcvr,
 	message_free(mp);
 	msg = erts_msg_distext2heap(rcvr, rcvr_locks, &mbuf, &token, dist_ext);
 	if (is_value(msg))
-#ifdef USE_VM_PROBES
-            if (DTRACE_ENABLED(message_queued)) {
-                DTRACE_CHARBUF(receiver_name, DTRACE_TERM_BUF_SIZE);
-
-                dtrace_proc_str(rcvr, receiver_name);
-                if (token != NIL && token != am_have_dt_utag) {
-                    tok_label = signed_val(SEQ_TRACE_T_LABEL(token));
-                    tok_lastcnt = signed_val(SEQ_TRACE_T_LASTCNT(token));
-                    tok_serial = signed_val(SEQ_TRACE_T_SERIAL(token));
-                }
-                DTRACE6(message_queued,
-                        receiver_name, size_object(msg), rcvr->msg.len,
-                        tok_label, tok_lastcnt, tok_serial);
-            }
-#endif
 	    erts_queue_message(rcvr, rcvr_locks, mbuf, msg, token
 #ifdef USE_VM_PROBES
 			       , NIL
@@ -403,8 +388,11 @@ erts_queue_dist_message(Process *rcvr,
              * TODO: We don't know the real size of the external message here.
              *       -1 will appear to a D script as 4294967295.
              */
-            DTRACE6(message_queued, receiver_name, -1, rcvr->msg.len + 1,
-                    tok_label, tok_lastcnt, tok_serial);
+            DTRACE6(message_queued, receiver_name, -1, rcvr->msg.len + 1
+#ifdef ERTS_SMP
+                    + rcvr->msg_inq.len
+#endif
+                    , tok_label, tok_lastcnt, tok_serial);
         }
 #endif
 	mp->data.dist_ext = dist_ext;
