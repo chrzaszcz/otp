@@ -851,9 +851,9 @@ erts_dsig_send_msg(ErtsDSigData *dsdp, Eterm remote, Eterm message)
 #ifdef USE_VM_PROBES
     *node_name = *sender_name = *receiver_name = '\0';
     if (DTRACE_ENABLED(message_send) || DTRACE_ENABLED(message_send_remote)) {
-        erts_snprintf(node_name, sizeof(node_name), "%T", dsdp->dep->sysname);
-        erts_snprintf(sender_name, sizeof(sender_name), "%T", sender->common.id);
-        erts_snprintf(receiver_name, sizeof(receiver_name), "%T", remote);
+      erts_snprintf(node_name, sizeof(DTRACE_CHARBUF_NAME(node_name)), "%T", dsdp->dep->sysname);
+      erts_snprintf(sender_name, sizeof(DTRACE_CHARBUF_NAME(sender_name)), "%T", sender->common.id);
+      erts_snprintf(receiver_name, sizeof(DTRACE_CHARBUF_NAME(receiver_name)), "%T", remote);
         msize = size_object(message);
         if (token != NIL && token != am_have_dt_utag) {
             tok_label = signed_val(SEQ_TRACE_T_LABEL(token));
@@ -908,9 +908,9 @@ erts_dsig_send_reg_msg(ErtsDSigData *dsdp, Eterm remote_name, Eterm message)
 #ifdef USE_VM_PROBES
     *node_name = *sender_name = *receiver_name = '\0';
     if (DTRACE_ENABLED(message_send) || DTRACE_ENABLED(message_send_remote)) {
-        erts_snprintf(node_name, sizeof(node_name), "%T", dsdp->dep->sysname);
-        erts_snprintf(sender_name, sizeof(sender_name), "%T", sender->common.id);
-        erts_snprintf(receiver_name, sizeof(receiver_name),
+      erts_snprintf(node_name, sizeof(DTRACE_CHARBUF_NAME(node_name)), "%T", dsdp->dep->sysname);
+      erts_snprintf(sender_name, sizeof(DTRACE_CHARBUF_NAME(sender_name)), "%T", sender->common.id);
+      erts_snprintf(receiver_name, sizeof(DTRACE_CHARBUF_NAME(receiver_name)),
                       "{%T,%s}", remote_name, node_name);
         msize = size_object(message);
         if (token != NIL && token != am_have_dt_utag) {
