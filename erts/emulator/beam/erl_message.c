@@ -1080,6 +1080,9 @@ erts_send_message(Process* sender,
 	mp->next = NULL;
 	mp->data.attached = NULL;
 	LINK_MESSAGE(receiver, mp);
+        DTRACE6(message_queued,
+                receiver_name, size_object(message), receiver->msg.len,
+                tok_label, tok_lastcnt, tok_serial);
 	res = receiver->msg.len;
 	erts_proc_notify_new_message(receiver);
 
