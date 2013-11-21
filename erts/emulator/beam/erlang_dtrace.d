@@ -81,8 +81,7 @@ provider erlang {
                         int token_label, int token_previous, int token_current);
 
     /**
-     * Fired when a message is queued to a local process.  This probe
-     * will not fire if the sender's pid == receiver's pid.
+     * Fired when a message is queued to a local process.
      *
      * NOTE: The 'size' parameter is in machine-dependent words and
      *       that the actual size of any binary terms in the message
