@@ -850,7 +850,7 @@ erts_dsig_send_msg(ErtsDSigData *dsdp, Eterm remote, Eterm message)
     }
 #ifdef USE_VM_PROBES
     *node_name = *sender_name = *receiver_name = '\0';
-    if (DTRACE_ENABLED(message_send) || DTRACE_ENABLED(message_send_remote)) {
+    if (DTRACE_ENABLED(message_send_remote)) {
       erts_snprintf(node_name, sizeof(DTRACE_CHARBUF_NAME(node_name)), "%T", dsdp->dep->sysname);
       erts_snprintf(sender_name, sizeof(DTRACE_CHARBUF_NAME(sender_name)), "%T", sender->common.id);
       erts_snprintf(receiver_name, sizeof(DTRACE_CHARBUF_NAME(receiver_name)), "%T", remote);
@@ -868,8 +868,6 @@ erts_dsig_send_msg(ErtsDSigData *dsdp, Eterm remote, Eterm message)
 		     make_small(DOP_SEND_TT), am_Cookie, remote, token);
     else
 	ctl = TUPLE3(&ctl_heap[0], make_small(DOP_SEND), am_Cookie, remote);
-    DTRACE6(message_send, sender_name, receiver_name,
-            msize, tok_label, tok_lastcnt, tok_serial);
     DTRACE7(message_send_remote, sender_name, node_name, receiver_name,
             msize, tok_label, tok_lastcnt, tok_serial);
     res = dsig_send(dsdp, ctl, message, 0);
@@ -907,7 +905,7 @@ erts_dsig_send_reg_msg(ErtsDSigData *dsdp, Eterm remote_name, Eterm message)
     }
 #ifdef USE_VM_PROBES
     *node_name = *sender_name = *receiver_name = '\0';
-    if (DTRACE_ENABLED(message_send) || DTRACE_ENABLED(message_send_remote)) {
+    if (DTRACE_ENABLED(message_send_remote)) {
       erts_snprintf(node_name, sizeof(DTRACE_CHARBUF_NAME(node_name)), "%T", dsdp->dep->sysname);
       erts_snprintf(sender_name, sizeof(DTRACE_CHARBUF_NAME(sender_name)), "%T", sender->common.id);
       erts_snprintf(receiver_name, sizeof(DTRACE_CHARBUF_NAME(receiver_name)),
@@ -927,8 +925,6 @@ erts_dsig_send_reg_msg(ErtsDSigData *dsdp, Eterm remote_name, Eterm message)
     else
 	ctl = TUPLE4(&ctl_heap[0], make_small(DOP_REG_SEND),
 		     sender->common.id, am_Cookie, remote_name);
-    DTRACE6(message_send, sender_name, receiver_name,
-            msize, tok_label, tok_lastcnt, tok_serial);
     DTRACE7(message_send_remote, sender_name, node_name, receiver_name,
             msize, tok_label, tok_lastcnt, tok_serial);
     res = dsig_send(dsdp, ctl, message, 0);
