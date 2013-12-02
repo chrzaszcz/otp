@@ -242,6 +242,10 @@ void** beam_ops;
 extern int count_instructions;
 #endif
 
+#ifdef USE_VM_PROBES
+#  define USE_VM_CALL_PROBES
+#endif
+
 #define SWAPIN             \
     HTOP = HEAP_TOP(c_p);  \
     E = c_p->stop
@@ -568,6 +572,19 @@ extern int count_instructions;
 #define MoveGenDest(src, dstp) \
    if ((dstp) == NULL) { r(0) = (src); } else { *(dstp) = src; }
 
+#ifdef USE_VM_CALL_PROBES
+#define MoveReturn(Src, Dest)       \
+    BeamInstr* fptr;                \
+    (Dest) = (Src);                 \
+    I = c_p->cp;                    \
+    ASSERT(VALID_INSTR(*c_p->cp));  \
+    if (DTRACE_ENABLED(function_return) && (fptr = find_function_from_pc(c_p->cp))) {\
+        DTRACE_RETURN(c_p, (Eterm)fptr[0], (Eterm)fptr[1], (Uint)fptr[2]);\
+    }                               \
+    c_p->cp = 0;                    \
+    CHECK_TERM(r(0));               \
+    Goto(*I)
+#else
 #define MoveReturn(Src, Dest)       \
     (Dest) = (Src);                 \
     I = c_p->cp;                    \
@@ -575,7 +592,22 @@ extern int count_instructions;
     c_p->cp = 0;                    \
     CHECK_TERM(r(0));               \
     Goto(*I)
+#endif
 
+#ifdef USE_VM_CALL_PROBES
+#define DeallocateReturn(Deallocate)       \
+  do {   \
+    BeamInstr* fptr;                       \
+    int words_to_pop = (Deallocate);       \
+    SET_I((BeamInstr *) cp_val(*E));       \
+    if (DTRACE_ENABLED(function_return) && (fptr = find_function_from_pc(c_p->cp))) {\
+        DTRACE_RETURN(c_p, (Eterm)fptr[0], (Eterm)fptr[1], (Uint)fptr[2]);\
+    }                                      \
+    E = ADD_BYTE_OFFSET(E, words_to_pop);  \
+    CHECK_TERM(r(0));                      \
+    Goto(*I);                              \
+  } while (0)
+#else
 #define DeallocateReturn(Deallocate)       \
   do {                                     \
     int words_to_pop = (Deallocate);       \
@@ -584,6 +616,7 @@ extern int count_instructions;
     CHECK_TERM(r(0));                      \
     Goto(*I);                              \
   } while (0)
+#endif
 
 #define MoveDeallocateReturn(Src, Dest, Deallocate)  \
     (Dest) = (Src);                                  \
@@ -985,10 +1018,6 @@ init_emulator(void)
 #  define REG_fcalls
 #  define REG_tmp_arg1
 #  define REG_tmp_arg2
-#endif
-
-#ifdef USE_VM_PROBES
-#  define USE_VM_CALL_PROBES
 #endif
 
 #ifdef USE_VM_CALL_PROBES
