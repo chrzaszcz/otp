@@ -176,6 +176,10 @@ typedef struct line_buf_context {
                                                              \
     dtrace_proc_str((PID), process_str);                     \
     dtrace_port_str((PORT), port_str);
+#define DTRACE_FORMAT_COMMON_PORT(PORT)                      \
+    DTRACE_CHARBUF(port_str, DTRACE_TERM_BUF_SIZE);          \
+                                                             \
+    dtrace_port_str((PORT), port_str);
 
 void
 dtrace_drvport_str(ErlDrvPort drvport, char *port_buf)
@@ -3410,8 +3414,13 @@ terminate_port(Port *prt)
 	int fpe_was_unmasked = erts_block_fpe();
 #ifdef USE_VM_PROBES
         if (DTRACE_ENABLED(driver_stop)) {
-            DTRACE_FORMAT_COMMON_PID_AND_PORT(connected_id, prt)
+          if (connected_id == NIL) {
+            DTRACE_FORMAT_COMMON_PORT(prt);
+            DTRACE3(driver_stop, "", drv->name, port_str);
+          } else {
+            DTRACE_FORMAT_COMMON_PID_AND_PORT(connected_id, prt);
             DTRACE3(driver_stop, process_str, drv->name, port_str);
+          }
         }
 #endif
 	(*drv->stop)((ErlDrvData)prt->drv_data);
